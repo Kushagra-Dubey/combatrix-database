@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1>Member Details: {{ member.name }}</h1>
+            <a href="{% url 'member-list' %}" class="btn btn-secondary mb-3">Back to Members</a>
+            <a href="{% url 'membership-create-for-member' member.id %}" class="btn btn-primary mb-3">Add New Membership</a>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Personal Information</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <tr>
+                            <th>Name:</th>
+                            <td>{{ member.name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Email:</th>
+                            <td>{{ member.email }}</td>
+                        </tr>
+                        <tr>
+                            <th>Phone Number:</th>
+                            <td>{{ member.phone_number }}</td>
+                        </tr>
+                        <tr>
+                            <th>Emergency Contact:</th>
+                            <td>{{ member.emergency_contact_name }} ({{ member.emergency_contact_number }})</td>
+                        </tr>
+                        <tr>
+                            <th>Date Joined:</th>
+                            <td>{{ member.date_joined }}</td>
+                        </tr>
+                        <tr>
+                            <th>Status:</th>
+                            <td>
+                                <span class="badge {% if member.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                                    {% if member.is_active %}Active{% else %}Inactive{% endif %}
+                                </span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Revenue Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <h3>₹{{ member.total_revenue }}</h3>
+                            <p>Total Revenue</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <h3>₹{{ member.combatrix_total_share }}</h3>
+                            <p>Combatrix Share</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <h3>₹{{ member.fitshala_total_share }}</h3>
+                            <p>Fitshala Share</p>
+                        </div>
+                    </div>
+                    
+                    <canvas id="revenueChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Membership History</h5>
+                </div>
+                <div class="card-body">
+                    {% if memberships %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Price</th>
+                                    <th>Combatrix Share</th>
+                                    <th>Fitshala Share</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for membership in memberships %}
+                                <tr>
+                                    <td>{{ membership.start_date }}</td>
+                                    <td>{{ membership.end_date }}</td>
+                                    <td>₹{{ membership.price }}</td>
+                                    <td>₹{{ membership.combatrix_share }}</td>
+                                    <td>₹{{ membership.fitshala_share }}</td>
+                                    <td>
+                                        {% if membership.end_date >= today %}
+                                            <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Expired</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                        <p>No membership records found for this member.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Revenue distribution chart
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+    const revenueChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['Combatrix Share', 'Fitshala Share'],
+            datasets: [{
+                data: [{{ member.combatrix_total_share }}, {{ member.fitshala_total_share }}],
+                backgroundColor: ['#17a2b8', '#28a745'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

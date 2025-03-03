@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3>{% if form.initial.member %}Add Membership for {{ form.initial.member }}{% else %}Add New Membership{% endif %}</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        {% if not form.initial.member %}
+                        <div class="mb-3">
+                            <label for="{{ form.member.id_for_label }}" class="form-label">Member</label>
+                            {{ form.member }}
+                            {% if form.member.errors %}
+                            <div class="text-danger">
+                                {% for error in form.member.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% else %}
+                            <input type="hidden" name="member" value="{{ form.initial.member.id }}">
+                        {% endif %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.start_date.id_for_label }}" class="form-label">Start Date</label>
+                            {{ form.start_date }}
+                            {% if form.start_date.errors %}
+                            <div class="text-danger">
+                                {% for error in form.start_date.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.end_date.id_for_label }}" class="form-label">End Date</label>
+                            {{ form.end_date }}
+                            {% if form.end_date.errors %}
+                            <div class="text-danger">
+                                {% for error in form.end_date.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.price.id_for_label }}" class="form-label">Total Price</label>
+                            {{ form.price }}
+                            {% if form.price.errors %}
+                            <div class="text-danger">
+                                {% for error in form.price.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.combatrix_share.id_for_label }}" class="form-label">Combatrix Share</label>
+                                    {{ form.combatrix_share }}
+                                    {% if form.combatrix_share.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.combatrix_share.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.fitshala_share.id_for_label }}" class="form-label">Fitshala Share</label>
+                                    {{ form.fitshala_share }}
+                                    {% if form.fitshala_share.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.fitshala_share.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% if form.initial.member %}{% url 'member-detail' form.initial.member.id %}{% else %}{% url 'member-list' %}{% endif %}" class="btn btn-secondary me-md-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Save</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Calculate shares automatically
+    document.addEventListener('DOMContentLoaded', function() {
+        const priceInput = document.getElementById('{{ form.price.id_for_label }}');
+        const combatrixShareInput = document.getElementById('{{ form.combatrix_share.id_for_label }}');
+        const fitshalaShareInput = document.getElementById('{{ form.fitshala_share.id_for_label }}');
+        
+        // Set default split (50/50)
+        priceInput.addEventListener('input', function() {
+            const price = parseFloat(this.value) || 0;
+            const halfPrice = (price / 2).toFixed(2);
+            combatrixShareInput.value = halfPrice;
+            fitshalaShareInput.value = halfPrice;
+        });
+        
+        // Update Fitshala share when Combatrix share changes
+        combatrixShareInput.addEventListener('input', function() {
+            const price = parseFloat(priceInput.value) || 0;
+            const combatrixShare = parseFloat(this.value) || 0;
+            fitshalaShareInput.value = (price - combatrixShare).toFixed(2);
+        });
+        
+        // Update Combatrix share when Fitshala share changes
+        fitshalaShareInput.addEventListener('input', function() {
+            const price = parseFloat(priceInput.value) || 0;
+            const fitshalaShare = parseFloat(this.value) || 0;
+            combatrixShareInput.value = (price - fitshalaShare).toFixed(2);
+        });
+    });
+</script>
+{% endblock %}

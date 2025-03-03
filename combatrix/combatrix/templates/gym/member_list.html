@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1>Combatrix MMA Gym - Member Management</h1>
+            <a href="{% url 'member-create' %}" class="btn btn-primary mb-3">Add New Member</a>
+        </div>
+    </div>
+    
+    <!-- Dashboard summary cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Members</h5>
+                    <div class="row">
+                        <div class="col-6">
+                            <h2>{{ total_members }}</h2>
+                            <p>Total</p>
+                        </div>
+                        <div class="col-6">
+                            <h2>{{ active_members }}</h2>
+                            <p>Active</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Revenue</h5>
+                    <div class="row">
+                        <div class="col-4">
+                            <h2>₹{{ total_revenue }}</h2>
+                            <p>Total Revenue</p>
+                        </div>
+                        <div class="col-4">
+                            <h2>₹{{ combatrix_revenue }}</h2>
+                            <p>Combatrix Share</p>
+                        </div>
+                        <div class="col-4">
+                            <h2>₹{{ fitshala_revenue }}</h2>
+                            <p>Fitshala Share</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Memberships expiring soon -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h5 class="card-title mb-0">Memberships Expiring Soon</h5>
+                </div>
+                <div class="card-body">
+                    {% if expiring_soon %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Member</th>
+                                    <th>Expiry Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for membership in expiring_soon %}
+                                <tr>
+                                    <td>{{ membership.member.name }}</td>
+                                    <td>{{ membership.end_date }}</td>
+                                    <td>
+                                        <a href="{% url 'membership-create-for-member' membership.member.id %}" class="btn btn-sm btn-primary">Renew</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                        <p>No memberships expiring in the next 30 days.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Member list -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">All Members</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="members-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Contact</th>
+                                    <th>Status</th>
+                                    <th>Membership End</th>
+                                    <th>Total Revenue</th>
+                                    <th>Combatrix Share</th>
+                                    <th>Fitshala Share</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for member in members %}
+                                <tr class="{% if member.is_active %}table-success{% else %}table-danger{% endif %}">
+                                    <td>{{ member.name }}</td>
+                                    <td>{{ member.phone_number }}</td>
+                                    <td>{% if member.is_active %}Active{% else %}Inactive{% endif %}</td>
+                                    <td>{{ member.membership_end_date|default:"N/A" }}</td>
+                                    <td>₹{{ member.total_revenue }}</td>
+                                    <td>₹{{ member.combatrix_total_share }}</td>
+                                    <td>₹{{ member.fitshala_total_share }}</td>
+                                    <td>
+                                        <a href="{% url 'member-detail' member.id %}" class="btn btn-sm btn-info">Details</a>
+                                        <a href="{% url 'membership-create-for-member' member.id %}" class="btn btn-sm btn-primary">Add Membership</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include Chart.js for visualizations -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Add DataTables for better table functionality
+    $(document).ready(function() {
+        $('#members-table').DataTable({
+            "order": [[3, "asc"]], // Sort by membership end date
+            "pageLength": 25
+        });
+    });
+</script>
+{% endblock %}
