@@ -23,10 +23,10 @@ class MemberListView(ListView):
         
         # Memberships expiring in the next 30 days
         today = timezone.now().date()
-        thirty_days_later = today + timezone.timedelta(days=30)
+        fifteen_days_later = today + timezone.timedelta(days=15)
         expiring_soon = Membership.objects.filter(
             end_date__gte=today,
-            end_date__lte=thirty_days_later
+            end_date__lte=fifteen_days_later
         ).select_related('member')
         context['expiring_soon'] = expiring_soon
         
