@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-100">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,6 +17,9 @@
     <style>
         body {
             background-color: #f8f9fa;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
         .navbar-brand {
             font-weight: bold;
@@ -30,15 +33,19 @@
             border-bottom: 1px solid rgba(0, 0, 0, 0.125);
             font-weight: 500;
         }
+        main {
+            flex: 1 0 auto;
+        }
         footer {
-            margin-top: 30px;
+            margin-top: auto;
             padding: 20px 0;
             background-color: #343a40;
             color: white;
+            flex-shrink: 0;
         }
     </style>
 </head>
-<body>
+<body class="d-flex flex-column h-100">
     <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
@@ -71,7 +78,7 @@
     </nav>
     
     <!-- Main Content -->
-    <main>
+    <main class="flex-shrink-0">
         {% block content %}
         {% endblock %}
     </main>
