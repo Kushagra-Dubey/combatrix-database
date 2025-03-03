@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres
+    container_name: combatrix-postgress-container
+    restart: always
+    environment:
+      POSTGRES_DB: combatrix-db
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+    ports:
+      - "5432:5432"

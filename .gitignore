@@ -1,0 +1,62 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+env/
+*.env
+*.venv
+
+# Django-specific
+db.sqlite3
+db.sqlite3-journal
+/media/
+staticfiles/
+*.log
+
+# Migrations
+**/migrations/__pycache__/
+**/migrations/*.pyc
+**/migrations/*.pyo
+**/migrations/*.pyd
+
+# IDE / Editor files
+.vscode/
+.idea/
+*.iml
+*.swp
+*.swo
+
+# Testing
+coverage/
+.coverage
+.tox/
+nosetests.xml
+pytest_cache/
+
+# Python package files
+*.egg-info/
+dist/
+build/
+pip-wheel-metadata/
+
+# Docker
+*.pid
+*.sock
+__pycache__/
+docker-compose.override.yml
+
+# Secrets
+secrets.json
+config.json
+
+# PostgreSQL data (if using Docker volumes)
+pgdata/
+
+# Celery / Background Tasks
+celerybeat-schedule
+celerybeat.pid
+
+# Ignore media files if they should not
