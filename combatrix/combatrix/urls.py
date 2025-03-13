@@ -25,4 +25,5 @@ urlpatterns = [
     path('member/new/', views.MemberCreateView.as_view(), name='member-create'),
     path('membership/new/', views.MembershipCreateView.as_view(), name='membership-create'),
     path('membership/new/<int:member_id>/', views.MembershipCreateView.as_view(), name='membership-create-for-member'),
+    path('revenue-analysis/', views.RevenueAnalysisView.as_view(), name='revenue-analysis'),
 ]

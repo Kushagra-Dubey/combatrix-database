@@ -43,3 +43,24 @@ class MembershipForm(forms.ModelForm):
                 raise forms.ValidationError("Combatrix share and Fitshala share must sum up to the total price")
         
         return cleaned_data
+
+
+class DateRangeForm(forms.Form):
+    start_date = forms.DateField(
+        widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+        label='Start Date'
+    )
+    end_date = forms.DateField(
+        widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+        label='End Date'
+    )
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        start_date = cleaned_data.get('start_date')
+        end_date = cleaned_data.get('end_date')
+        
+        if start_date and end_date and start_date > end_date:
+            raise forms.ValidationError("End date cannot be before start date")
+        
+        return cleaned_data
