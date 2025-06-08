@@ -122,9 +122,9 @@
         // Set default split (50/50)
         priceInput.addEventListener('input', function() {
             const price = parseFloat(this.value) || 0;
-            const halfPrice = (price / 2).toFixed(2);
-            combatrixShareInput.value = halfPrice;
-            fitshalaShareInput.value = halfPrice;
+            const fitshala_share = (price / 5).toFixed(2);
+            combatrixShareInput.value = price - fitshala_share;
+            fitshalaShareInput.value = fitshala_share;
         });
         
         // Update Fitshala share when Combatrix share changes

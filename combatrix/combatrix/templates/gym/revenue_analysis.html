@@ -1,0 +1,267 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <h1>Revenue Analysis</h1>
+      <a href="{% url 'member-list' %}" class="btn btn-secondary mb-3">Back to Dashboard</a>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Select Date Range</h5>
+        </div>
+        <div class="card-body">
+          <form method="post">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+              {% for error in form.non_field_errors %} {{ error }} {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="row">
+              <div class="col-md-5">
+                <div class="mb-3">
+                  <label for="{{ form.start_date.id_for_label }}" class="form-label">Start Date</label>
+                  {{ form.start_date }}
+                  {% if form.start_date.errors %}
+                  <div class="text-danger">
+                    {% for error in form.start_date.errors %} {{ error }} {% endfor %}
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="col-md-5">
+                <div class="mb-3">
+                  <label for="{{ form.end_date.id_for_label }}" class="form-label">End Date</label>
+                  {{ form.end_date }}
+                  {% if form.end_date.errors %}
+                  <div class="text-danger">
+                    {% for error in form.end_date.errors %} {{ error }} {% endfor %}
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary mb-3 w-100">Analyze</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if results %}
+  <!-- Results Section -->
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h5 class="card-title mb-0">
+            Revenue Summary: {{ start_date|date:"M d, Y" }} to {{ end_date|date:"M d, Y" }}
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-3 text-center mb-3">
+              <div class="card h-100 bg-light">
+                <div class="card-body">
+                  <h3>{{ member_count }}</h3>
+                  <p class="mb-0">New Members</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3 text-center mb-3">
+              <div class="card h-100 bg-success text-white">
+                <div class="card-body">
+                  <h3>₹{{ total_revenue }}</h3>
+                  <p class="mb-0">Total Revenue</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3 text-center mb-3">
+              <div class="card h-100 bg-info text-white">
+                <div class="card-body">
+                  <h3>₹{{ combatrix_revenue }}</h3>
+                  <p class="mb-0">Combatrix Share</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3 text-center mb-3">
+              <div class="card h-100 bg-warning text-dark">
+                <div class="card-body">
+                  <h3>₹{{ fitshala_revenue }}</h3>
+                  <p class="mb-0">Fitshala Share</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Monthly Revenue Trend</h5>
+        </div>
+        <div class="card-body">
+          <canvas id="revenueChart" height="300"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Revenue Distribution</h5>
+        </div>
+        <div class="card-body">
+          <canvas id="distributionChart" height="300"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Memberships in Selected Period</h5>
+        </div>
+        <div class="card-body">
+          {% if memberships %}
+          <div class="table-responsive">
+            <table class="table table-striped" id="memberships-table">
+              <thead>
+                <tr>
+                  <th>Member</th>
+                  <th>Start Date</th>
+                  <th>End Date</th>
+                  <th>Price</th>
+                  <th>Combatrix Share</th>
+                  <th>Fitshala Share</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for membership in memberships %}
+                <tr>
+                  <td>{{ membership.member.name }}</td>
+                  <td>{{ membership.start_date }}</td>
+                  <td>{{ membership.end_date }}</td>
+                  <td>₹{{ membership.price }}</td>
+                  <td>₹{{ membership.combatrix_share }}</td>
+                  <td>₹{{ membership.fitshala_share }}</td>
+                  <td>
+                    <a href="{% url 'member-detail' membership.member.id %}" class="btn btn-sm btn-info">View Member</a>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <p class="alert alert-info">No memberships found in the selected date range.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{% if results %}
+<script>
+  // Set up DataTables
+  $(document).ready(function() {
+      $('#memberships-table').DataTable({
+          "pageLength": 10,
+          "order": [[1, "desc"]]
+      });
+  });
+
+  // Monthly Revenue Chart
+  const monthlyCtx = document.getElementById('revenueChart').getContext('2d');
+  const monthlyChart = new Chart(monthlyCtx, {
+      type: 'bar',
+      data: {
+          labels: [{% for item in monthly_data %}"{{ item.month|date:"M Y" }}"{% if not forloop.last %}, {% endif %}{% endfor %}],
+          datasets: [
+              {
+                  label: 'Total Revenue',
+                  data: [{% for item in monthly_data %}{{ item.revenue }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+                  backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                  borderColor: 'rgba(40, 167, 69, 1)',
+                  borderWidth: 1
+              },
+              {
+                  label: 'Combatrix Share',
+                  data: [{% for item in monthly_data %}{{ item.combatrix }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+                  backgroundColor: 'rgba(23, 162, 184, 0.7)',
+                  borderColor: 'rgba(23, 162, 184, 1)',
+                  borderWidth: 1
+              },
+              {
+                  label: 'Fitshala Share',
+                  data: [{% for item in monthly_data %}{{ item.fitshala }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+                  backgroundColor: 'rgba(255, 193, 7, 0.7)',
+                  borderColor: 'rgba(255, 193, 7, 1)',
+                  borderWidth: 1
+              }
+          ]
+      },
+      options: {
+          responsive: true,
+          scales: {
+              y: {
+                  beginAtZero: true,
+                  title: {
+                      display: true,
+                      text: 'Amount (₹)'
+                  }
+              },
+              x: {
+                  title: {
+                      display: true,
+                      text: 'Month'
+                  }
+              }
+          }
+      }
+  });
+
+  // Revenue Distribution Chart
+  const distCtx = document.getElementById('distributionChart').getContext('2d');
+  const distChart = new Chart(distCtx, {
+      type: 'pie',
+      data: {
+          labels: ['Combatrix Share', 'Fitshala Share'],
+          datasets: [{
+              data: [{{ combatrix_revenue }}, {{ fitshala_revenue }}],
+              backgroundColor: ['rgba(23, 162, 184, 0.7)', 'rgba(255, 193, 7, 0.7)'],
+              borderColor: ['rgba(23, 162, 184, 1)', 'rgba(255, 193, 7, 1)'],
+              borderWidth: 1
+          }]
+      },
+      options: {
+          responsive: true,
+          plugins: {
+              legend: {
+                  position: 'bottom',
+              }
+          }
+      }
+  });
+</script>
+{% endif %}
+{% endblock %}
