@@ -33,7 +33,7 @@ const MembershipForm = () => {
   const fetchMembers = async () => {
     try {
       const data = await memberService.getAll();
-      setMembers(Array.isArray(data) ? data : data.results || []);
+      setMembers(Array.isArray(data) ? data : data.results.members || []);
     } catch (err) {
       console.error('Error fetching members:', err);
     }
@@ -212,7 +212,7 @@ const MembershipForm = () => {
                 className={`input-field ${errors.member ? 'border-red-500' : ''}`}
               >
                 <option value="">Choose a member...</option>
-                {members.map(member => (
+                {members?.map(member => (
                   <option key={member.id} value={member.id}>
                     {member.name} - {member.email}
                   </option>
