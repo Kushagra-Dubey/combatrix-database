@@ -49,11 +49,13 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # React dev server
-    "http://localhost:5173",  # Vite dev server (if using Vite)
-    "https://combatrix-database.vercel.app",
-]
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:3000",  # React dev server
+#     "http://localhost:5173",  # Vite dev server (if using Vite)
+#     "https://combatrix-database.vercel.app",
+# ]
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 CSRF_TRUSTED_ORIGINS = [
     "https://combatrix-database.vercel.app",
