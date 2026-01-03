@@ -23,9 +23,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-ioean4642oiw2e^tea^hoszg_-xa1-x^ih)t1t9bg^5kmjgy$i'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*.onrender.com"]
+
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 
 # Application definition
@@ -58,6 +60,11 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # React dev server
     "http://localhost:5173",  # Vite dev server (if using Vite)
+    "https://combatrix-database.vercel.app",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://combatrix-database.vercel.app",
 ]
 
 REST_FRAMEWORK = {
