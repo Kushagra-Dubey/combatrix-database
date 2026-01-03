@@ -1,21 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { memberService, membershipService } from '../../services/api';
+import { memberService } from '../../services/api';
 import { format } from 'date-fns';
 
-const MembershipForm = () => {
-  const { memberId } = useParams();
+const MemberForm = () => {
+  const { id } = useParams(); // If id exists, we're editing
   const navigate = useNavigate();
+  const isEditMode = !!id;
 
-  const [members, setMembers] = useState([]);
-  const [selectedMember, setSelectedMember] = useState(null);
   const [formData, setFormData] = useState({
-    member: memberId || '',
-    start_date: format(new Date(), 'yyyy-MM-dd'),
-    end_date: '',
-    price: '',
-    combatrix_share: '',
-    fitshala_share: '',
+    name: '',
+    email: '',
+    phone_number: '',
+    emergency_contact_name: '',
+    emergency_contact_number: '',
+    date_joined: format(new Date(), 'yyyy-MM-dd'),
   });
 
   const [errors, setErrors] = useState({});
@@ -23,65 +22,61 @@ const MembershipForm = () => {
   const [submitError, setSubmitError] = useState(null);
 
   useEffect(() => {
-    if (!memberId) {
-      fetchMembers();
-    } else {
-      fetchMemberDetail(memberId);
+    if (isEditMode) {
+      fetchMember();
     }
-  }, [memberId]);
+  }, [id]);
 
-  const fetchMembers = async () => {
+  const fetchMember = async () => {
     try {
-      const data = await memberService.getAll();
-      setMembers(Array.isArray(data) ? data : data.results.members || []);
-    } catch (err) {
-      console.error('Error fetching members:', err);
-    }
-  };
-
-  const fetchMemberDetail = async (id) => {
-    try {
+      setLoading(true);
       const data = await memberService.getById(id);
-      setSelectedMember(data);
-      setFormData(prev => ({ ...prev, member: id }));
+      setFormData({
+        name: data.name || '',
+        email: data.email || '',
+        phone_number: data.phone_number || '',
+        emergency_contact_name: data.emergency_contact_name || '',
+        emergency_contact_number: data.emergency_contact_number || '',
+        date_joined: data.date_joined || format(new Date(), 'yyyy-MM-dd'),
+      });
     } catch (err) {
-      console.error('Error fetching member:', err);
+      setSubmitError('Failed to load member data');
+    } finally {
+      setLoading(false);
     }
   };
 
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.member) {
-      newErrors.member = 'Please select a member';
+    if (!formData.name.trim()) {
+      newErrors.name = 'Name is required';
     }
 
-    if (!formData.start_date) {
-      newErrors.start_date = 'Start date is required';
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Invalid email format';
     }
 
-    if (!formData.end_date) {
-      newErrors.end_date = 'End date is required';
-    } else if (new Date(formData.end_date) <= new Date(formData.start_date)) {
-      newErrors.end_date = 'End date must be after start date';
+    if (!formData.phone_number.trim()) {
+      newErrors.phone_number = 'Phone number is required';
+    } else if (!/^[6-9]\d{9}$/.test(formData.phone_number.replace(/\s+/g, ''))) {
+      newErrors.phone_number = 'Invalid phone number (10 digits starting with 6-9)';
     }
 
-    if (!formData.price || formData.price <= 0) {
-      newErrors.price = 'Please enter a valid price';
+    if (!formData.emergency_contact_name.trim()) {
+      newErrors.emergency_contact_name = 'Emergency contact name is required';
     }
 
-    if (!formData.combatrix_share || formData.combatrix_share < 0) {
-      newErrors.combatrix_share = 'Please enter a valid amount';
+    if (!formData.emergency_contact_number.trim()) {
+      newErrors.emergency_contact_number = 'Emergency contact number is required';
+    } else if (!/^[6-9]\d{9}$/.test(formData.emergency_contact_number.replace(/\s+/g, ''))) {
+      newErrors.emergency_contact_number = 'Invalid emergency contact number';
     }
 
-    if (!formData.fitshala_share || formData.fitshala_share < 0) {
-      newErrors.fitshala_share = 'Please enter a valid amount';
-    }
-
-    const totalShares = parseFloat(formData.combatrix_share || 0) + parseFloat(formData.fitshala_share || 0);
-    const price = parseFloat(formData.price || 0);
-    if (Math.abs(totalShares - price) > 0.01) {
-      newErrors.shares = 'Combatrix and Fitshala shares must sum to the total price';
+    if (!formData.date_joined) {
+      newErrors.date_joined = 'Date joined is required';
     }
 
     setErrors(newErrors);
@@ -92,35 +87,7 @@ const MembershipForm = () => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
 
-    // Auto-calculate shares when price changes
-    if (name === 'price' && value) {
-      const price = parseFloat(value);
-      const fitshala = (price / 5).toFixed(2);
-      const combatrix = (price - fitshala).toFixed(2);
-      setFormData(prev => ({
-        ...prev,
-        fitshala_share: fitshala,
-        combatrix_share: combatrix
-      }));
-    }
-
-    // Update combatrix share when fitshala changes
-    if (name === 'fitshala_share' && formData.price) {
-      const fitshala = parseFloat(value || 0);
-      const price = parseFloat(formData.price);
-      const combatrix = (price - fitshala).toFixed(2);
-      setFormData(prev => ({ ...prev, combatrix_share: combatrix }));
-    }
-
-    // Update fitshala share when combatrix changes
-    if (name === 'combatrix_share' && formData.price) {
-      const combatrix = parseFloat(value || 0);
-      const price = parseFloat(formData.price);
-      const fitshala = (price - combatrix).toFixed(2);
-      setFormData(prev => ({ ...prev, fitshala_share: fitshala }));
-    }
-
-    // Clear errors
+    // Clear error for this field
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: null }));
     }
@@ -137,32 +104,50 @@ const MembershipForm = () => {
     setLoading(true);
 
     try {
-      await membershipService.create(formData);
-      navigate(memberId ? `/members/${memberId}` : '/members');
+      if (isEditMode) {
+        await memberService.update(id, formData);
+      } else {
+        await memberService.create(formData);
+      }
+      navigate('/members');
     } catch (err) {
-      setSubmitError(err.response?.data?.detail || err.message || 'An error occurred');
+      setSubmitError(
+        err.response?.data?.detail || 
+        err.response?.data?.message ||
+        `Failed to ${isEditMode ? 'update' : 'create'} member`
+      );
     } finally {
       setLoading(false);
     }
   };
+
+  if (loading && isEditMode) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Header */}
       <div>
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => navigate('/members')}
           className="text-blue-600 hover:text-blue-800 flex items-center mb-2"
         >
           <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-          Back
+          Back to Members
         </button>
         <h1 className="text-3xl font-bold text-gray-900">
-          {selectedMember ? `Add Membership for ${selectedMember.name}` : 'Add New Membership'}
+          {isEditMode ? 'Edit Member' : 'Add New Member'}
         </h1>
-        <p className="text-gray-500 mt-1">Enter membership details</p>
+        <p className="text-gray-500 mt-1">
+          {isEditMode ? 'Update member information' : 'Enter member details to register'}
+        </p>
       </div>
 
       {/* Form */}
@@ -183,147 +168,125 @@ const MembershipForm = () => {
             </div>
           )}
 
-          {errors.shares && (
-            <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm text-yellow-700">{errors.shares}</p>
-                </div>
+          {/* Personal Information */}
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold text-gray-900 border-b pb-2">
+              Personal Information
+            </h2>
+
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                Full Name *
+              </label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                className={`input-field ${errors.name ? 'border-red-500' : ''}`}
+                placeholder="Enter full name"
+              />
+              {errors.name && (
+                <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                  Email Address *
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className={`input-field ${errors.email ? 'border-red-500' : ''}`}
+                  placeholder="email@example.com"
+                />
+                {errors.email && (
+                  <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="phone_number" className="block text-sm font-medium text-gray-700 mb-2">
+                  Phone Number *
+                </label>
+                <input
+                  type="tel"
+                  id="phone_number"
+                  name="phone_number"
+                  value={formData.phone_number}
+                  onChange={handleChange}
+                  className={`input-field ${errors.phone_number ? 'border-red-500' : ''}`}
+                  placeholder="9876543210"
+                />
+                {errors.phone_number && (
+                  <p className="mt-1 text-sm text-red-600">{errors.phone_number}</p>
+                )}
               </div>
             </div>
-          )}
 
-          {/* Member Selection */}
-          {!memberId && (
             <div>
-              <label htmlFor="member" className="block text-sm font-medium text-gray-700 mb-2">
-                Select Member *
-              </label>
-              <select
-                id="member"
-                name="member"
-                value={formData.member}
-                onChange={handleChange}
-                className={`input-field ${errors.member ? 'border-red-500' : ''}`}
-              >
-                <option value="">Choose a member...</option>
-                {members?.map(member => (
-                  <option key={member.id} value={member.id}>
-                    {member.name} - {member.email}
-                  </option>
-                ))}
-              </select>
-              {errors.member && (
-                <p className="mt-1 text-sm text-red-600">{errors.member}</p>
-              )}
-            </div>
-          )}
-
-          {/* Date Range */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="start_date" className="block text-sm font-medium text-gray-700 mb-2">
-                Start Date *
+              <label htmlFor="date_joined" className="block text-sm font-medium text-gray-700 mb-2">
+                Date Joined *
               </label>
               <input
                 type="date"
-                id="start_date"
-                name="start_date"
-                value={formData.start_date}
+                id="date_joined"
+                name="date_joined"
+                value={formData.date_joined}
                 onChange={handleChange}
-                className={`input-field ${errors.start_date ? 'border-red-500' : ''}`}
+                className={`input-field ${errors.date_joined ? 'border-red-500' : ''}`}
               />
-              {errors.start_date && (
-                <p className="mt-1 text-sm text-red-600">{errors.start_date}</p>
-              )}
-            </div>
-
-            <div>
-              <label htmlFor="end_date" className="block text-sm font-medium text-gray-700 mb-2">
-                End Date *
-              </label>
-              <input
-                type="date"
-                id="end_date"
-                name="end_date"
-                value={formData.end_date}
-                onChange={handleChange}
-                className={`input-field ${errors.end_date ? 'border-red-500' : ''}`}
-              />
-              {errors.end_date && (
-                <p className="mt-1 text-sm text-red-600">{errors.end_date}</p>
+              {errors.date_joined && (
+                <p className="mt-1 text-sm text-red-600">{errors.date_joined}</p>
               )}
             </div>
           </div>
 
-          {/* Pricing */}
-          <div>
-            <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
-              Total Price (₹) *
-            </label>
-            <input
-              type="number"
-              id="price"
-              name="price"
-              value={formData.price}
-              onChange={handleChange}
-              min="0"
-              step="0.01"
-              className={`input-field ${errors.price ? 'border-red-500' : ''}`}
-              placeholder="Enter total price"
-            />
-            {errors.price && (
-              <p className="mt-1 text-sm text-red-600">{errors.price}</p>
-            )}
-            <p className="mt-1 text-sm text-gray-500">
-              Shares will be calculated automatically (80% Combatrix, 20% Fitshala)
-            </p>
-          </div>
+          {/* Emergency Contact */}
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold text-gray-900 border-b pb-2">
+              Emergency Contact
+            </h2>
 
-          {/* Revenue Split */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="combatrix_share" className="block text-sm font-medium text-gray-700 mb-2">
-                Combatrix Share (₹) *
+              <label htmlFor="emergency_contact_name" className="block text-sm font-medium text-gray-700 mb-2">
+                Contact Name *
               </label>
               <input
-                type="number"
-                id="combatrix_share"
-                name="combatrix_share"
-                value={formData.combatrix_share}
+                type="text"
+                id="emergency_contact_name"
+                name="emergency_contact_name"
+                value={formData.emergency_contact_name}
                 onChange={handleChange}
-                min="0"
-                step="0.01"
-                className={`input-field ${errors.combatrix_share ? 'border-red-500' : ''}`}
-                placeholder="Combatrix share"
+                className={`input-field ${errors.emergency_contact_name ? 'border-red-500' : ''}`}
+                placeholder="Emergency contact name"
               />
-              {errors.combatrix_share && (
-                <p className="mt-1 text-sm text-red-600">{errors.combatrix_share}</p>
+              {errors.emergency_contact_name && (
+                <p className="mt-1 text-sm text-red-600">{errors.emergency_contact_name}</p>
               )}
             </div>
 
             <div>
-              <label htmlFor="fitshala_share" className="block text-sm font-medium text-gray-700 mb-2">
-                Fitshala Share (₹) *
+              <label htmlFor="emergency_contact_number" className="block text-sm font-medium text-gray-700 mb-2">
+                Contact Number *
               </label>
               <input
-                type="number"
-                id="fitshala_share"
-                name="fitshala_share"
-                value={formData.fitshala_share}
+                type="tel"
+                id="emergency_contact_number"
+                name="emergency_contact_number"
+                value={formData.emergency_contact_number}
                 onChange={handleChange}
-                min="0"
-                step="0.01"
-                className={`input-field ${errors.fitshala_share ? 'border-red-500' : ''}`}
-                placeholder="Fitshala share"
+                className={`input-field ${errors.emergency_contact_number ? 'border-red-500' : ''}`}
+                placeholder="9876543210"
               />
-              {errors.fitshala_share && (
-                <p className="mt-1 text-sm text-red-600">{errors.fitshala_share}</p>
+              {errors.emergency_contact_number && (
+                <p className="mt-1 text-sm text-red-600">{errors.emergency_contact_number}</p>
               )}
             </div>
           </div>
@@ -332,7 +295,7 @@ const MembershipForm = () => {
           <div className="flex justify-end space-x-3 pt-4 border-t">
             <button
               type="button"
-              onClick={() => navigate(-1)}
+              onClick={() => navigate('/members')}
               className="btn-secondary"
             >
               Cancel
@@ -348,10 +311,10 @@ const MembershipForm = () => {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Creating...
+                  {isEditMode ? 'Updating...' : 'Creating...'}
                 </>
               ) : (
-                'Create Membership'
+                <>{isEditMode ? 'Update Member' : 'Create Member'}</>
               )}
             </button>
           </div>
@@ -361,4 +324,4 @@ const MembershipForm = () => {
   );
 };
 
-export default MembershipForm;
+export default MemberForm;

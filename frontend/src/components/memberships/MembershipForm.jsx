@@ -137,6 +137,15 @@ const MembershipForm = () => {
     setLoading(true);
 
     try {
+      const submissionData = {
+        ...formData,
+        member: parseInt(formData.member), // Convert to integer
+        price: parseFloat(formData.price),
+        combatrix_share: parseFloat(formData.combatrix_share),
+        fitshala_share: parseFloat(formData.fitshala_share)
+      };
+
+    await membershipService.create(submissionData);
       await membershipService.create(formData);
       navigate(memberId ? `/members/${memberId}` : '/members');
     } catch (err) {
