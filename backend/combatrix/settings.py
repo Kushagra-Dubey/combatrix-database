@@ -15,7 +15,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-ioean4642oiw2e^tea^hoszg_-xa1-x^ih)t1t9bg^5kmjgy$i'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -74,7 +74,7 @@ REST_FRAMEWORK = {
         'rest_framework.filters.OrderingFilter',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 25,
+    'PAGE_SIZE': 100,
 }
 
 from datetime import timedelta
