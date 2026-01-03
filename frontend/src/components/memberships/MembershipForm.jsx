@@ -145,8 +145,7 @@ const MembershipForm = () => {
         fitshala_share: parseFloat(formData.fitshala_share)
       };
 
-    await membershipService.create(submissionData);
-      await membershipService.create(formData);
+      await membershipService.create(submissionData);
       navigate(memberId ? `/members/${memberId}` : '/members');
     } catch (err) {
       setSubmitError(err.response?.data?.detail || err.message || 'An error occurred');
