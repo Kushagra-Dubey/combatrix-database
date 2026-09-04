@@ -15,11 +15,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-ioean4642oiw2e^tea^hoszg_-xa1-x^ih)t1t9bg^5kmjgy$i'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Set to True for development, False for production
+DEBUG = True  # Changed to True for development - set to False in production
 
 ALLOWED_HOSTS = ['*']
 
+# Static files configuration
+STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# WhiteNoise configuration for serving static files in production
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
 
 # Application definition
