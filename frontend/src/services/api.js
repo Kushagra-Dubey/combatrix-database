@@ -70,6 +70,7 @@ export const authService = {
 export const memberService = {
   getAll: async (params = {}) => {
     const response = await api.get('/members/', { params });
+    console.log("member-data", response.data)
     return response.data;
   },
   
@@ -128,6 +129,96 @@ export const membershipService = {
   
   revenueAnalysis: async (data) => {
     const response = await api.post('/memberships/revenue_analysis/', data);
+    return response.data;
+  },
+};
+
+export const attendanceService = {
+  // Get all attendance records
+  getAll: async (params = {}) => {
+    const response = await api.get('/attendance/', { params });
+    return response.data;
+  },
+  
+  // Get specific attendance record
+  getById: async (id) => {
+    const response = await api.get(`/attendance/${id}/`);
+    return response.data;
+  },
+  
+  // Mark attendance for today
+  markToday: async (memberId = null) => {
+    const data = memberId ? { member_id: memberId } : {};
+    const response = await api.post('/attendance/mark_today/', data);
+    return response.data;
+  },
+  
+  // Create attendance record
+  create: async (data) => {
+    const response = await api.post('/attendance/', data);
+    return response.data;
+  },
+  
+  // Confirm attendance (admin)
+  confirm: async (id) => {
+    const response = await api.post(`/attendance/${id}/confirm/`);
+    return response.data;
+  },
+  
+  // Reject attendance (admin)
+  reject: async (id, notes = '') => {
+    const response = await api.post(`/attendance/${id}/reject/`, { notes });
+    return response.data;
+  },
+  
+  // Get pending attendance requests (admin)
+  getPending: async () => {
+    const response = await api.get('/attendance/pending/');
+    return response.data;
+  },
+  
+  // Bulk confirm (admin)
+  bulkConfirm: async (attendanceIds) => {
+    const response = await api.post('/attendance/bulk_confirm/', {
+      attendance_ids: attendanceIds
+    });
+    return response.data;
+  },
+  
+  // Get my stats
+  getMyStats: async () => {
+    const response = await api.get('/attendance/my_stats/');
+    return response.data;
+  },
+  
+  // Get heatmap data
+  getHeatmap: async (memberId = null) => {
+    const params = memberId ? { member_id: memberId } : {};
+    const response = await api.get('/attendance/heatmap/', { params });
+    return response.data;
+  },
+};
+
+// Leaderboard Service
+export const leaderboardService = {
+  // Get all leaderboard data
+  getAll: async (params = {}) => {
+    const response = await api.get('/leaderboard/', { params });
+    return response.data;
+  },
+  
+  // Get current month leaderboard
+  getCurrentMonth: async () => {
+    const response = await api.get('/leaderboard/current_month/');
+    return response.data;
+  },
+  
+  // Refresh leaderboard (admin)
+  refresh: async (year = null, month = null) => {
+    const data = {};
+    if (year) data.year = year;
+    if (month) data.month = month;
+    const response = await api.post('/leaderboard/refresh/', data);
     return response.data;
   },
 };

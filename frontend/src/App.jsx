@@ -12,6 +12,9 @@ import MemberDetail from './components/members/MemberDetail';
 import MemberForm from './components/members/MemberForm';
 import MembershipForm from './components/memberships/MembershipForm';
 import RevenueAnalysis from './components/analytics/RevenueAnalysis';
+import Leaderboard from './components/attendance/Leaderboard';
+import AdminAttendance from './components/attendance/AdminAttendance';
+import MyAttendance from './components/attendance/MyAttendance';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -53,6 +56,9 @@ function AppRoutes() {
         <Route path="memberships/new" element={<MembershipForm />} />
         <Route path="memberships/new/:memberId" element={<MembershipForm />} />
         <Route path="revenue" element={<RevenueAnalysis />} />
+        <Route path="leaderboard" element={<Leaderboard />} />
+        <Route path="admin-attendance" element={<AdminAttendance />} />
+        <Route path="my-attendance" element={<MyAttendance />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
