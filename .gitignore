@@ -59,4 +59,10 @@ pgdata/
 celerybeat-schedule
 celerybeat.pid
 
+# OS files
+.DS_Store
+
+# Generated CSV exports from download_external_data / sync_external_data
+csv_exports/
+
 # Ignore media files if they should not
